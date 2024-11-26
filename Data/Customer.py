@@ -1,33 +1,47 @@
 import random
 from DataStructure.Record import Record
-import Visit
+import Data.Visit as Visit
 
 
 class Customer(Record):
     def __init__(self, name=None,  surname=None, ecv=None):
         super().__init__()
         if name is not None and ecv is not None and surname is not None:
-            self.__id = random.randint(1, 1000)
+            self.__id = random.randint(1, 1000000)
             self.__name = name
             self.__name_valid_str = len(name)
             self.__ecv = ecv
             self.__ecv_valid_str = len(ecv)
             self.__surname = surname
             self.__surname_valid_str = len(surname)
-            self.__valid_visits = 0
-            self.__visits = []
+            """ self.__valid_visits = 0
+            self.__visits = [] """
             
         else:
-            self.__id = random.randint(1, 1000)
-            self.__name = "Unknown"
+            self.__id = random.randint(1, 1000000)
+            self.__name = ""
             self.__name_valid_str = len("Unknown")
-            self.__ecv = "SHGAT621"
+            self.__ecv = ""
             self.__ecv_valid_str = len(self.__ecv)
-            self.__surname = "Not specified"
-            self.__surname_valid_str = len("Not specified")
-            self.__visits = []
-        while len(self.__visits) < 5:
-            self.__visits.append(Visit())  # Fill with empty instances
+            self.__surname = ""
+            self.__surname_valid_str = len("")
+            """ self.__visits = [] """
+        """ while len(self.__visits) < 5:
+            self.__visits.append(Visit())  """ # Fill with empty instances
+            
+    def __eq__(self, other):
+        """
+        Overrides the == operator to compare two Person objects.
+        """
+        if not isinstance(other, Customer):
+            return False
+        return (
+            self.__id == other.__id and
+            self.__ecv == other.__ecv
+        )
+    def __str__(self):
+        return f"Customer(id={self.__id}, name={self.__name}, surname={self.__surname}, ecv={self.__ecv})"
+
     # ID property
     @property
     def id(self):
@@ -78,7 +92,7 @@ class Customer(Record):
     def surname_valid_str(self):
         return self.__surname_valid_str
 
-    # Valid visits property
+    """  # Valid visits property
     @property
     def valid_visits(self):
         return self.__valid_visits
@@ -94,22 +108,42 @@ class Customer(Record):
 
     @visits.setter
     def visits(self, value):
-        self.__visits = value
+        self.__visits = value """
+    def is_full(self):
+        """
+        Vráti True, ak je blok plný.
+        """
+        return self.valid_visits == len(self.visits)
+    def add_visit(self, visit):
+        """
+        Pridá záznam o navsteve.
+        """
+        if  self.is_full() == False:
+            if not self.visits:
+                self.visits.append(visit)
+            else:
+                self.visits[self.valid_visits] = visit
+            self.valid_visits += 1
+    def fill_string(self, string, length):
+        return string.ljust(length, "*")
     def to_byte_array(self):
         byte_array = bytearray()
         byte_array += self.__id.to_bytes(4, 'little')
-        byte_array += (len(self.__name).to_bytes(4, 'little'))
-        byte_array += bytes(self.__name, encoding='utf-8') 
+        filled_name = self.fill_string(self.__name, 15)
+        byte_array += (len(filled_name).to_bytes(4, 'little'))
+        byte_array += bytes(filled_name, encoding='utf-8') 
         byte_array += self.__name_valid_str.to_bytes(4, 'little')
-        byte_array += (len(self.__ecv).to_bytes(4, 'little'))
-        byte_array += bytes(self.__ecv, encoding='utf-8') 
+        filled_ecv = self.fill_string(self.__ecv, 10)
+        byte_array += (len(filled_ecv).to_bytes(4, 'little'))
+        byte_array += bytes(filled_ecv, encoding='utf-8') 
         byte_array += self.__ecv_valid_str.to_bytes(4, 'little')
-        byte_array += (len(self.__surname).to_bytes(4, 'little'))
-        byte_array += bytes(self.__surname, encoding='utf-8') 
+        filled_surname = self.fill_string(self.__surname, 20)
+        byte_array += (len(filled_surname).to_bytes(4, 'little'))
+        byte_array += bytes(filled_surname, encoding='utf-8') 
         byte_array += self.__surname_valid_str.to_bytes(4, 'little')
-        byte_array += self.__valid_visits.to_bytes(4, 'little')
+        """ byte_array += self.__valid_visits.to_bytes(4, 'little')
         for visit in self.__visits:
-            byte_array += visit.to_byte_array() 
+            byte_array += visit.to_byte_array()  """
         return byte_array
     @staticmethod 
     def from_byte_array(byte_array):
@@ -145,7 +179,7 @@ class Customer(Record):
 
         __surname_valid_str = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
+        """ 
         __valid_visits = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
 
@@ -162,6 +196,8 @@ class Customer(Record):
             __visits.append(Visit())
         customer = Customer(__name[0:__name_valid_str], __surname[0:__surname_valid_str], __ecv[0:__ecv_valid_str])
         customer.valid_visits = __valid_visits
-        customer.visits = __visits
+        customer.visits = __visits """
+        customer = Customer(__name[0:__name_valid_str], __surname[0:__surname_valid_str], __ecv[0:__ecv_valid_str])
+        customer.__id = __id
         return customer
     

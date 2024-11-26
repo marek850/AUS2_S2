@@ -1,7 +1,9 @@
 import sys
+from Data.Customer import Customer
 from DataStructure.Block import Block
 from DataStructure.HeapFile import HeapFile
 from Person import Person
+from Tester.Tester import DataStructureTester
 
 def main():
     """ string = "safeq"
@@ -36,7 +38,7 @@ def main():
      """
     #print(bytearray(string, 'utf-8'))
     # Create a HeapFile with a block size of 3 records per block
-    heap_file = HeapFile(800, Person())
+    """ heap_file = HeapFile(800, Person())
 
     # Create Person objects
     person1 = Person(name="John Doe", age=30, address="123 Main St")
@@ -69,6 +71,53 @@ def main():
     print(heap_file.delete(address1, person1))
     print(heap_file.delete(address2, person2))
     print(heap_file.delete(address3, person3))
-    print(heap_file.delete(address4, person4))
+    print(heap_file.delete(address4, person4)) """
+    """ heap_file = HeapFile(800, Customer())
+
+# Create Customer objects
+    customer1 = Customer(name="John", surname="Doe", ecv="AB123CD")
+    customer2 = Customer(name="Alice", surname="Smith", ecv="XY456EF")
+    customer3 = Customer(name="Bob", surname="Johnson", ecv="GH789IJ")
+    customer4 = Customer(name="Diana", surname="Prince", ecv="KL012MN")
+
+    # Add Customers to the HeapFile
+    address1 = heap_file.insert(customer1)
+    print(f"Customer 1 added at address: {address1}")
+    print(f"Customer 1 size: {customer1.get_size()}\n")
+
+    address2 = heap_file.insert(customer2)
+    print(f"Customer 2 added at address: {address2}")    print(f"Customer 2 size: {customer2.get_size()}\n")
+
+    address3 = heap_file.insert(customer3)
+    print(f"Customer 3 added at address: {address3}")
+    print(f"Customer 3 size: {customer3.get_size()}\n")
+
+    address4 = heap_file.insert(customer4)
+    print(f"Customer 4 added at address: {address4}")
+    print(f"Customer 4 size: {customer4.get_size()}\n")
+
+    # Retrieve Customers from the HeapFile using their addresses
+    retrieved_customer1 = heap_file.get(address1, customer1)
+    print(f"Retrieved Customer 1: {retrieved_customer1.name}, {retrieved_customer1.surname}, {retrieved_customer1.ecv}")
+
+    retrieved_customer2 = heap_file.get(address2, customer2)
+    print(f"Retrieved Customer 2: {retrieved_customer2.name}, {retrieved_customer2.surname}, {retrieved_customer2.ecv}")
+
+    retrieved_customer3 = heap_file.get(address3, customer3)
+    print(f"Retrieved Customer 3: {retrieved_customer3.name}, {retrieved_customer3.surname}, {retrieved_customer3.ecv}")
+
+    retrieved_customer4 = heap_file.get(address4, customer4)
+    print(f"Retrieved Customer 4: {retrieved_customer4.name}, {retrieved_customer4.surname}, {retrieved_customer4.ecv}")
+
+    # Delete Customers from the HeapFile
+    print(heap_file.delete(address1, customer1))  # Expected True if successfully deleted
+    print(heap_file.delete(address2, customer2))  # Expected True if successfully deleted
+    print(heap_file.delete(address3, customer3))  # Expected True if successfully deleted
+    print(heap_file.delete(address4, customer4))  # Expected True if successfully deleted """
+    #while True:
+    tester = DataStructureTester()#9008504728247541526
+    
+    tester.test()
+    
 if __name__ == "__main__":
     main()

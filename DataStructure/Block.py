@@ -131,7 +131,7 @@ class Block(IBlock):
         for record in self.__records:
             byte_array += record.to_byte_array()
             #print(len(byte_array))
-        print(f"Velkost bloku pred paddingom {len(byte_array)} ")
+        #print(f"Velkost bloku pred paddingom {len(byte_array)} ")
         if len(byte_array) < self.__size and padding:
             byte_array += (10).to_bytes(self.__size - len(byte_array), 'little')
 

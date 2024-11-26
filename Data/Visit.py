@@ -1,7 +1,7 @@
 from datetime import date
 import struct
 
-from JobDescription import JobDescription
+from Data.JobDescription import JobDescription
 
 
 class Visit:

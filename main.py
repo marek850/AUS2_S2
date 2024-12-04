@@ -1,9 +1,13 @@
 import sys
-from Data.Customer import Customer
+from CarShop import CarShop
+from Data.Customer import Customer, CustomerByID
 from DataStructure.Block import Block
+from DataStructure.HashBlock import HashBlock
+from DataStructure.HashFile import HashFile
 from DataStructure.HeapFile import HeapFile
-from Person import Person
-from Tester.Tester import DataStructureTester
+from GUI.ServiceApp import ServiceApp
+from Tester.Tester import HeapFileTester
+from Tester.Tester import HashFileTester
 
 def main():
     """ string = "safeq"
@@ -115,9 +119,66 @@ def main():
     print(heap_file.delete(address3, customer3))  # Expected True if successfully deleted
     print(heap_file.delete(address4, customer4))  # Expected True if successfully deleted """
     #while True:
-    tester = DataStructureTester()#9008504728247541526
+    """ tester = DataStructureTester()#9008504728247541526
     
-    tester.test()
+    tester.test() """
+    """ appka = ServiceApp()
+    appka.mainloop() """
+    """ customer1 = Customer(name="John", surname="Doe", ecv="AB123CD")
+    customer2 = Customer(name="Alice", surname="Smith", ecv="XY456EF")
+    customer3 = Customer(name="Bob", surname="Johnson", ecv="GH789IJ")
+    customer4 = Customer(name="Diana", surname="Prince", ecv="KL012MN")
     
+    cstmr = CustomerByID(23,4)
+    cstmr_bytes = cstmr.to_byte_array()
+    print(cstmr)
+    cstmr2 = CustomerByID.from_byte_array(cstmr_bytes)
+    print(cstmr2)
+    if cstmr == cstmr2:
+        print("rovnake")
+    
+    hshblock = HashBlock(800, CustomerByID())
+    
+    hshblock.add_record(cstmr)
+    print(hshblock)
+    hash2 = hshblock.to_byte_array()
+    asdhas = HashBlock.from_byte_array(hash2, CustomerByID, 800)
+    print(asdhas)
+    if hshblock == asdhas:
+        print("rovnake") """
+    """  
+    hash_file = HashFile(20, CustomerByID())
+    hash_file.insert(CustomerByID(23, 4))
+    print(hash_file.find(CustomerByID(23, 4)))
+    print("---------------------------------")
+    hash_file.insert(CustomerByID(3, 4))
+    print(hash_file.find(CustomerByID(23, 4)))
+    print(hash_file.find(CustomerByID(3, 4)))
+    print("---------------------------------")
+    hash_file.insert(CustomerByID(7, 4))
+    print(hash_file.find(CustomerByID(23, 4)))
+    print(hash_file.find(CustomerByID(3, 4)))
+    print(hash_file.find(CustomerByID(7, 4)))
+    print("---------------------------------")
+    hash_file.insert(CustomerByID(9, 4))
+    print(hash_file.find(CustomerByID(23, 4)))
+    print(hash_file.find(CustomerByID(3, 4)))
+    print(hash_file.find(CustomerByID(7, 4)))
+    print(hash_file.find(CustomerByID(9, 4)))
+    print("---------------------------------")
+    hash_file.insert(CustomerByID(11, 4))
+    print(hash_file.find(CustomerByID(23, 4)))
+    print(hash_file.find(CustomerByID(3, 4)))
+    print(hash_file.find(CustomerByID(7, 4)))
+    print(hash_file.find(CustomerByID(9, 4)))
+    print(hash_file.find(CustomerByID(11, 4)))
+    print("---------------------------------")
+    hash_file.get_all_blocks() """
+    """  tester = HashFileTester()#9008504728247541526
+    
+    tester.test() """
+    appka = ServiceApp(CarShop())
+    appka.mainloop()
+   # hash_file.get_all_blocks()
 if __name__ == "__main__":
     main()

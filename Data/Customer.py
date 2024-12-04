@@ -1,21 +1,26 @@
+import hashlib
 import random
+from DataStructure.HashRecord import HashRecord
 from DataStructure.Record import Record
-import Data.Visit as Visit
-
+from Data.Visit import Visit
+from bitarray import bitarray
 
 class Customer(Record):
-    def __init__(self, name=None,  surname=None, ecv=None):
+    def __init__(self, name=None,  surname=None, ecv=None, id = None):
         super().__init__()
         if name is not None and ecv is not None and surname is not None:
-            self.__id = random.randint(1, 1000000)
+            if id is not None:
+                self.__id = id
+            else:
+                self.__id = random.randint(1, 1000000)
             self.__name = name
             self.__name_valid_str = len(name)
             self.__ecv = ecv
             self.__ecv_valid_str = len(ecv)
             self.__surname = surname
             self.__surname_valid_str = len(surname)
-            """ self.__valid_visits = 0
-            self.__visits = [] """
+            self.__valid_visits = 0
+            self.__visits = [] 
             
         else:
             self.__id = random.randint(1, 1000000)
@@ -25,9 +30,9 @@ class Customer(Record):
             self.__ecv_valid_str = len(self.__ecv)
             self.__surname = ""
             self.__surname_valid_str = len("")
-            """ self.__visits = [] """
-        """ while len(self.__visits) < 5:
-            self.__visits.append(Visit())  """ # Fill with empty instances
+            self.__visits = [] 
+        while len(self.__visits) < 5:
+            self.__visits.append(Visit())  
             
     def __eq__(self, other):
         """
@@ -36,12 +41,28 @@ class Customer(Record):
         if not isinstance(other, Customer):
             return False
         return (
-            self.__id == other.__id and
-            self.__ecv == other.__ecv
+            self.__id == other.__id or self.__ecv == other.__ecv
         )
     def __str__(self):
         return f"Customer(id={self.__id}, name={self.__name}, surname={self.__surname}, ecv={self.__ecv})"
+    def hash_id(self):
+        # Hash ID (which is an integer) using SHA-256
+        id_str = str(self.__id)
+        hash_obj = hashlib.sha256(id_str.encode())
+        # Get the hash digest and convert it to a bitset with a maximum of 32 bits
+        hash_digest = hash_obj.digest()
+        bitset = bitarray()
+        bitset.frombytes(hash_digest)
+        return bitset[:min(32, len(bitset))]  # Limit the bitset to 32 bits if necessary
 
+    def hash_ecv(self):
+        # Hash ECV (which is a string) using SHA-256
+        hash_obj = hashlib.sha256(self.__ecv.encode())
+        # Get the hash digest and convert it to a bitset with a maximum of 32 bits
+        hash_digest = hash_obj.digest()
+        bitset = bitarray()
+        bitset.frombytes(hash_digest)
+        return bitset[:min(32, len(bitset))]  # Limit the bitset to 32 bits if necessary
     # ID property
     @property
     def id(self):
@@ -92,7 +113,7 @@ class Customer(Record):
     def surname_valid_str(self):
         return self.__surname_valid_str
 
-    """  # Valid visits property
+     # Valid visits property
     @property
     def valid_visits(self):
         return self.__valid_visits
@@ -108,7 +129,7 @@ class Customer(Record):
 
     @visits.setter
     def visits(self, value):
-        self.__visits = value """
+        self.__visits = value
     def is_full(self):
         """
         Vráti True, ak je blok plný.
@@ -200,4 +221,191 @@ class Customer(Record):
         customer = Customer(__name[0:__name_valid_str], __surname[0:__surname_valid_str], __ecv[0:__ecv_valid_str])
         customer.__id = __id
         return customer
+
+class CustomerForHash(HashRecord):
+    def __init__(self, address = None):
+        super().__init__()
+        if address is not None:
+            self.__address = address
+        else:
+            self.__address = 53
+    # Address property
+    @property
+    def address(self):
+        return self.__address
+
+    @address.setter
+    def address(self, value):
+        self.__address = value
+    # Key property
+    @property
+    def key(self):
+        return self.__key
+
+    @key.setter
+    def key(self, value):
+        self.__key = value
+    def get_hash():
+        pass
+    def get_hash_by_key(self, key):
+        pass
+class CustomerByID(CustomerForHash):
+    def __init__(self, customer_id = None , address = None):
+        super().__init__(address)
+        if customer_id is not None:
+            self.__customer_id = customer_id
+        else:
+            self.__customer_id = 0
+        self.__key = self.__customer_id
+    # Customer ID property
+    @property
+    def customer_id(self):
+        return self.__customer_id
+
+    @customer_id.setter
+    def customer_id(self, value):
+        self.__customer_id = value
+        self.__key = value  # Update the key automatically
+    def __str__(self):
+        return f"CustomerByID(customer_id={self.__customer_id}, address={self.address})"
+    def __eq__(self, other):
+        """
+        Overrides the == operator to compare two CustomerByID objects.
+        """
+        return self.__key == other.__key
+    def get_hash_by_key(self, key):
+        bitset = bitarray(endian='little')
+        bitset.frombytes(key.to_bytes((key.bit_length() + 7) // 8, byteorder='little'))
+        
+        if len(bitset) < 32:
+            padding = 32 - len(bitset)
+            bitset = bitset+ bitarray('0') * padding 
+        return bitset[:32]
+    def get_hash(self):
+        # Convert ID (which is an integer) to bits
+        bitset = bitarray(endian='little')
+        bitset.frombytes(self.__customer_id.to_bytes((self.__customer_id.bit_length() + 7) // 8, byteorder='little'))
+        
+        if len(bitset) < 32:
+            padding = 32 - len(bitset)
+            bitset = bitset+ bitarray('0') * padding 
+        return bitset[:32]
+    def get_size(self):
+        """
+        Returns the size of the Record in bytes.
+        """
+        return len(self.to_byte_array())
+    def fill_string(self, string, length):
+        return string.ljust(length, "*")
+    def to_byte_array(self):
+        byte_array = bytearray()
+        byte_array += super().address.to_bytes(4, 'little')
+        byte_array += self.__customer_id.to_bytes(4, 'little')
+        return byte_array
+    @staticmethod 
+    def from_byte_array(byte_array):
+          # Create an empty Customer object
+        offset = 0  # Start at the beginning of the byte array
+        
+        address = int.from_bytes(byte_array[offset:offset + 4], 'little')
+        offset += 4
+
+        customer_id = int.from_bytes(byte_array[offset:offset + 4], 'little')
+        
+        customer = CustomerByID(customer_id, address)
+        return customer
+
     
+class CustomerByECV(CustomerForHash):
+    def __init__(self, ecv = None, address = None):
+        super().__init__(address)
+        self.__customer_ecv = None
+        if ecv is not None:
+            self.__customer_ecv = ecv
+            self.__ecv_valid_str = len(self.__customer_ecv)
+        else:
+            self.__customer_ecv = ""
+            self.__ecv_valid_str = len(self.__customer_ecv)
+        self.__key = self.__customer_ecv
+    def __eq__(self, other):
+        """
+        Overrides the == operator to compare two CustomerByID objects.
+        """
+        return self.__key == other.__key
+    def get_size(self):
+        """
+        Returns the size of the Record in bytes.
+        """
+        return len(self.to_byte_array())
+    def get_hash(self):
+        # Convert ECV (which is a string) to bits
+        bitset = bitarray(endian='little')
+        bitset.frombytes(self.__customer_ecv.encode('utf-8'))
+        if len(bitset) < 32:
+            padding = 32 - len(bitset)
+            bitset = bitset + bitarray('0') * padding
+        
+        return bitset[:32]  
+    def get_hash_by_key(self, key):
+        # Convert ECV (which is a string) to bits
+        bitset = bitarray(endian='little')
+        bitset.frombytes(key.encode('utf-8'))
+        if len(bitset) < 32:
+            padding = 32 - len(bitset)
+            bitset = bitset + bitarray('0') * padding
+        
+        return bitset[:32]  
+    def fill_string(self, string, length):
+        return string.ljust(length, "*")
+    def to_byte_array(self):
+        byte_array = bytearray()
+        byte_array += super().address.to_bytes(4, 'little')
+        filled_ecv = self.fill_string(self.__key, 10)
+        byte_array += (len(filled_ecv).to_bytes(4, 'little'))
+        byte_array += bytes(filled_ecv, encoding='utf-8') 
+        byte_array += self.__ecv_valid_str.to_bytes(4, 'little')
+        return byte_array
+    @staticmethod 
+    def from_byte_array(byte_array):
+          # Create an empty Customer object
+        offset = 0  # Start at the beginning of the byte array
+        
+        address = int.from_bytes(byte_array[offset:offset + 4], 'little')
+        offset += 4
+
+        ecv_length = int.from_bytes(byte_array[offset:offset + 4], 'little')
+        offset += 4
+
+        __ecv = byte_array[offset:offset + ecv_length].decode('utf-8')
+        offset += ecv_length
+        
+        __ecv_valid_str = int.from_bytes(byte_array[offset:offset + 4], 'little')
+        offset += 4
+        customer = CustomerByECV(__ecv[0:__ecv_valid_str], address)
+        return customer
+class CustomerGUI:
+    def __init__(self, id=None, name=None, surname=None, ecv=None, visits=None):
+        self.id = int(id) if id is not None else None
+        self.name = name[:15] if name is not None else ""
+        self.surname = surname[:20] if surname is not None else ""
+        self.ecv = ecv[:10] if ecv is not None else ""
+        self.visits = visits if visits is not None else []
+
+    def from_customer(self, customer):
+        """
+        Initialize GUI representation of Customer using an existing Customer object.
+        """
+        self.id = customer.id
+        self.name = customer.name[:15]
+        self.surname = customer.surname[:20]
+        self.ecv = customer.ecv[:10]
+        self.visits = customer.visits
+
+    def to_customer(self):
+        """
+        Create a Customer object from the GUI representation.
+        """
+        return Customer(name=self.name, surname=self.surname, ecv=self.ecv, id=self.id, visits=self.visits)
+
+    def __str__(self):
+        return f"CustomerGUI(id={self.id}, name={self.name}, surname={self.surname}, ecv={self.ecv}, visits={self.visits})"

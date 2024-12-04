@@ -1,5 +1,5 @@
 class JobDescription:
-    def __init__(self, description):
+    def __init__(self, description = None):
         if description is not None:
             self.__description = description
             self.__valid_str = len(description)

@@ -1,20 +1,17 @@
-import sys
-from DataStructure.IBlock import IBlock
-from DataStructure.Record import Record
+from DataStructure.Block import Block
 
-class Block(IBlock):
-    def __init__(self, size, record = None):
-        self.__valid_count = 0  # počet platných záznamov
-        self.__record_type = record # Track the type of the initial record
-        self.__records = []  # záznamy v bloku
-        self.__size = size  # veľkosť bloku
+
+class HashBlock():
+    def __init__(self, block_size, record_type = None, depth=1):
+        self.__depth = depth
+        self.__valid_count = 0
+        self.__size = block_size
+        self.__record_type = record_type
+        self.__records = []
         self.__next_block = None  # integer, adresa nasledovného bloku
-        self.__previous_block = None  # adresa predchádzajúceho bloku
-        #num_records =  size / record.get_size()
+        self.__previous_block = None
         while self.is_block_full() == False:
-            self.__records.append(type(self.__record_type)())  # Fill with empty instances
-        
-        
+            self.__records.append(type(self.__record_type)())
     def __str__(self):
         """
         Returns a string representation of the Person object.
@@ -26,10 +23,16 @@ class Block(IBlock):
             f"Records:\n{records_str}\n"
             f"Next Block: {self.__next_block}\n"
             f"Previous Block: {self.__previous_block}\n"
-            f"Size: {self.__size}"
+            f"Size: {self.__size}\n"
+            f"Depth: {self.__depth}"
         )
-    def get_valid_records(self):
-        return self.__records[:self.__valid_count]
+    @property
+    def depth(self):
+        return self.__depth
+
+    @depth.setter
+    def depth(self, value):
+        self.__depth = value
     @property
     def valid_count(self):
         return self.__valid_count
@@ -79,6 +82,7 @@ class Block(IBlock):
             else:
                 self.__records[self.__valid_count] = record
             self.__valid_count += 1
+            return True
         else:
             return False
     def remove_record(self, record):
@@ -113,6 +117,7 @@ class Block(IBlock):
         Converts the block into a byte array representation.
         """
         byte_array = bytearray()
+        byte_array += self.depth.to_bytes(4, 'little')
         #print(len(byte_array))
         # Add valid_count as a 4-byte integer
         byte_array += self.__valid_count.to_bytes(4, 'little')
@@ -154,8 +159,9 @@ class Block(IBlock):
             Block: The reconstructed Block object.
         """
         cursor = 0
-
+        depth = int.from_bytes(byte_array[cursor:cursor + 4], 'little')
         # Read valid_count (4 bytes)
+        cursor += 4
         valid_count = int.from_bytes(byte_array[cursor:cursor + 4], 'little')
         cursor += 4
 
@@ -180,13 +186,14 @@ class Block(IBlock):
             records.append(record)
             cursor += record_size
             
-        block = Block(len(byte_array), record_class())    
+        block = HashBlock(len(byte_array), record_class())    
         
         block.records = records
         block.valid_count = valid_count
         block.record_type = record_class
         block.next_block = next_block
         block.previous_block = previous_block
+        block.depth = depth
 
         # Initialize the block with size and records
         
@@ -208,4 +215,3 @@ class Block(IBlock):
         Vráti veľkosť bloku v bajtoch.
         """
         return self.__size
-

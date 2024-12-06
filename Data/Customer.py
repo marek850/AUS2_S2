@@ -1,4 +1,3 @@
-import hashlib
 import random
 from DataStructure.HashRecord import HashRecord
 from DataStructure.Record import Record
@@ -43,7 +42,7 @@ class Customer(Record):
         )
     def __str__(self):
         visits_str = "\n".join(str(visit) for visit in self.__visits)
-        return f"Customer(id={self.__id}, name={self.__name}, surname={self.__surname}, ecv={self.__ecv}, valid_visits={self.__valid_visits}, visits:\n{visits_str}, )"
+        return f"ID Zákazníka: {self.__id}, Meno: {self.__name}, Priezvisko: {self.__surname}, EČV: {self.__ecv}, Návštevy servisu:\n{visits_str},"
         
 
     @property
@@ -230,7 +229,7 @@ class CustomerByID(CustomerForHash):
         self.__key = value  
         
     def __str__(self):
-        return f"CustomerByID(customer_id={self.__customer_id}, address={self.address})"
+        return f"Zákazník: ID: {self.__customer_id}, Adresa: {self.address})"
     
     def __eq__(self, other):
         return self.__key == other.__key
@@ -297,7 +296,7 @@ class CustomerByECV(CustomerForHash):
         return len(self.to_byte_array())
     
     def __str__(self):
-        return f"CustomerByECV(ecv={self.__customer_ecv}, address={self.address})"
+        return f"Zákazník: EČV: {self.__customer_ecv}, Adresa: {self.address})"
     def get_hash(self):
         bitset = bitarray(endian='little')
         bitset.frombytes(self.__customer_ecv.encode('utf-8'))
@@ -355,7 +354,7 @@ class CustomerGUI:
         self.visits = visits if visits is not None else []
     def __str__(self):
         visits_str = "\n".join(str(visit) for visit in self.visits[:self.valid_visits])
-        return f"Customer(id={self.id}, name={self.name}, surname={self.surname}, ecv={self.ecv}, visits:\n{visits_str}"        
+        return f"ID Zákazníka: {self.__id}, Meno: {self.__name}, Priezvisko: {self.__surname}, EČV: {self.__ecv}, Návštevy servisu:\n{visits_str},"        
     def add_visit(self, visit):
         if  self.is_full() == False:
             if not self.visits:

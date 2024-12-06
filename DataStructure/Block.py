@@ -17,12 +17,10 @@ class Block(IBlock):
     def __str__(self):
         records_str = "\n".join([str(record) for record in self.__records])
         return (
-            f"Valid Count: {self.__valid_count}\n"
-            f"Record Type: {self.__record_type}\n"
-            f"Records:\n{records_str}\n"
-            f"Next Block: {self.__next_block}\n"
-            f"Previous Block: {self.__previous_block}\n"
-            f"Size: {self.__size}"
+            f"Blok:\n"
+            f"Záznamy:\n{records_str}\n"
+            f"Nasledovník: {self.__next_block}\n"
+            f"Predchodca: {self.__previous_block}\n"
         )
         
     def get_valid_records(self):

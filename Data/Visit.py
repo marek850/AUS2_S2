@@ -47,7 +47,7 @@ class Visit:
         
     def __str__(self):
         description_str = ', '.join(str(desc) for desc in self.__description[:self.__description_valid])
-        return f"Visit(price={self.__price:.2f}, date={self.__date}, description=[{description_str}] valid_descriptions={self.__description_valid})"
+        return f"Návšteva servisu: Cena: {self.__price:.2f}, Dátum návštevy: {self.__date}, Práce: [{description_str}] "
     
     def to_byte_array(self):
         byte_array = bytearray()

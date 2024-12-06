@@ -14,7 +14,7 @@ class JobDescription:
         return string.ljust(length, "*")
     
     def __str__(self):
-        return f"JobDescription:'{self.__description}')"
+        return f"Popis práce: '{self.__description}')"
     
     def to_byte_array(self):
         byte_array = bytearray()

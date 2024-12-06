@@ -1,43 +1,32 @@
 import csv
 import os
 from DataStructure.Block import Block
+from DataStructure.FileStructure import FileStructure
 
 
-class HeapFile:
+class HeapFile(FileStructure):
     def __init__(self, block_size, record_type, file_name, load_file):
-        """
-        Initializes the HeapFile with the given block size.
-        """
-        self.__record_type = record_type
-        self.__block_size = block_size  # Size of each block in bytes
-        self.__file_path = file_name  # Path to the binary file
+        super().__init__(block_size, record_type, file_name, load_file)
         self.__partial_free_block = None  # Address of the partially free block, if any
         self.__free_block = None  # Address of a fully free block, if any
-        self.__number_of_blocks = 0  # Number of blocks in the file
-        self.__load_file = load_file
-        # Ensure the file exists
-        if not os.path.exists(self.__file_path):
-            self.__file = open(self.__file_path, "wb") 
-            self.__file.close()
-        if  os.path.exists(self.__load_file):
+        if  os.path.exists(self.load_file):
             self.load()
     
-        self.__file =  open(self.__file_path, "r+b")
         
         @property
         def file(self):
-            return self.__file
+            return self.file
         @property
         def record_type(self):
-            return self.__record_type
+            return self.record_type
 
         @property
         def block_size(self):
-            return self.__block_size
+            return self.block_size
 
         @property
         def file_path(self):
-            return self.__file_path
+            return self.file_path
 
         @property
         def partial_free_block(self):
@@ -49,22 +38,22 @@ class HeapFile:
 
         @property
         def number_of_blocks(self):
-            return self.__number_of_blocks
+            return self.number_of_blocks
         @file.setter
         def file(self, value):
-            self.__file = value
+            self.file = value
 
         @record_type.setter
         def record_type(self, value):
-            self.__record_type = value
+            self.record_type = value
 
         @block_size.setter
         def block_size(self, value):
-            self.__block_size = value
+            self.block_size = value
 
         @file_path.setter
         def file_path(self, value):
-            self.__file_path = value
+            self.file_path = value
 
         @partial_free_block.setter
         def partial_free_block(self, value):
@@ -76,92 +65,46 @@ class HeapFile:
 
         @number_of_blocks.setter
         def number_of_blocks(self, value):
-            self.__number_of_blocks = value
+            self.number_of_blocks = value
     def save(self):
         data = {
-            "block_size": self.__block_size,
+            "block_size": self.block_size,
             "partial_free_block": self.__partial_free_block,
             "free_block": self.__free_block,
-            "number_of_blocks": self.__number_of_blocks,
+            "number_of_blocks": self.number_of_blocks,
         }
 
         
-        with open(self.__load_file, mode='w', newline='') as csv_file:
+        with open(self.load_file, mode='w', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=data.keys())
             writer.writeheader()
             writer.writerow(data)
     def load(self):
         try:
-            with open(self.__load_file, mode='r', newline='') as csv_file:
+            with open(self.load_file, mode='r', newline='') as csv_file:
                 reader = csv.DictReader(csv_file)
                 for row in reader:
-                    self.__block_size = int(row["block_size"]) if row["block_size"] else None
+                    self.block_size = int(row["block_size"]) if row["block_size"] else None
                     self.__partial_free_block = (
                         int(row["partial_free_block"]) if row["partial_free_block"] else None
                     )
                     self.__free_block = int(row["free_block"]) if row["free_block"] else None
-                    self.__number_of_blocks = (
+                    self.number_of_blocks = (
                         int(row["number_of_blocks"]) if row["number_of_blocks"] else None
                     )
         except FileNotFoundError:
-            print(f"Error: File {self.__load_file} not found.")
+            print(f"Error: File {self.load_file} not found.")
         except Exception as e:
             print(f"Error loading data: {e}")
-    def __get_block_offset(self, block_address):
-        """
-        Calculates the byte offset of a block in the file based on its address.
-        """
-        return block_address * self.__block_size
-
-    def read_block(self, block_address):
-        """
-        Reads a block from the file given its address.
-        """
-        offset = self.__get_block_offset(block_address)
-        #with open(self.file_path, "rb+") as file:
-        self.__file.seek(offset)
-        block_data = self.__file.read(self.__block_size)
-        if not block_data:
-            return None
-        return Block.from_byte_array(block_data,  type(self.__record_type), self.__block_size)
-
-    def __write_block(self, block_address, block):
-        """
-        Writes a block to the file at the given address.
-        """
-        offset = self.__get_block_offset(block_address)
-        #with open(self.file_path, "r+b") as file:
-        self.__file.seek(offset)
-        #print(f"newBlock size: {len(block.to_byte_array())}")
-        self.__file.write(block.to_byte_array())
-
-    def __append_block(self, block):
-        """
-        Appends a new block to the end of the file.
-        """
-        #with open(self.file_path, "r+b") as file:
-        self.__file.seek(0, 2)  # Move to the end of the file
-        self.__file.write(block.to_byte_array())
-
-    def __get_file_size(self):
-        """
-        Returns the size of the file in bytes.
-        """
-        #with open(self.file_path, "rb+") as file:
-        self.__file.seek(0, 2)  # Move to the end of the file
-        return self.__file.tell()
-
+    
     def insert(self, record):
-        """
-        Inserts a record into the HeapFile and returns the block address.
-        """
         # Check if there's a partially free block
         if self.__partial_free_block is not None:
             block_address = self.__partial_free_block
             block = self.read_block(block_address)
             if block.is_full() == False:
                 block.add_record(record)
-                self.__write_block(block_address, block)
+                self.write_block(block_address, block)
                 # If the block is now full, remove it from partially free blocks
                 if block.is_full():
                     self.__partial_free_block = block.next_block
@@ -173,55 +116,41 @@ class HeapFile:
             block = self.read_block(block_address)
             if not block.is_full():
                 block.add_record(record)
-                self.__write_block(block_address, block)
+                self.write_block(block_address, block)
                 # Move this block to partially free blocks
                 self.__partial_free_block = block_address
                 self.__free_block = block.next_block
                 return block_address
 
         # Otherwise, create a new block
-        block_address = self.__number_of_blocks
-        block = Block(self.__block_size, self.__record_type)
-        self.__number_of_blocks += 1
+        block_address = self.number_of_blocks
+        block = Block(self.block_size, self.record_type)
+        self.number_of_blocks += 1
         #print(f"Block size: {block.get_current_size()}")
         block.add_record(record)
-        self.__append_block(block)
+        self.append_block(block)
         self.__partial_free_block = block_address
         return block_address
     def update(self, address, record):
-        """
-        Updates a record in a specific block address.
-        """
         block = self.read_block(address)
         rec = block.get_record(record)
         block.remove_record(rec)
-        """ block_new = Block(self.__block_size, self.__record_type)
-        records = block.records
-        valid_records = block.valid_count """
-        """ for _ in records[:valid_records]:
-            block_new.add_record(_) """
         block.add_record(record)
-        self.__write_block(address, block)
+        self.write_block(address, block)
     def get(self, address, record):
-        """
-        Retrieves a record from a specific block address.
-        """
         block = self.read_block(address)
         if block:
             return block.get_record(record)
         return None
 
     def delete(self, address, record):
-        """
-        Deletes a record from a specific block address.
-        """
         block = self.read_block(address)
         was_full = block.is_full()
         if block:
             block.remove_record(record)
             if block.is_empty():
                 #if block is now empty but not the last block
-                if address != self.__number_of_blocks - 1:
+                if address != self.number_of_blocks - 1:
                     if self.__partial_free_block == address:
                         self.__partial_free_block = block.next_block
                         
@@ -229,19 +158,19 @@ class HeapFile:
                             next = self.read_block(block.next_block)
                             next.previous_block = block.previous_block
                             
-                            self.__write_block(block.next_block, next)
+                            self.write_block(block.next_block, next)
                             block.next_block = None
                             block.previous_block = None
                     if block.previous_block != None:
                         previous = self.read_block(block.previous_block)
                         previous.next_block = block.next_block
                         
-                        self.__write_block(block.previous_block, previous)
+                        self.write_block(block.previous_block, previous)
                     if block.next_block != None:
                             next = self.read_block(block.next_block)
                             next.previous_block = block.previous_block
                             
-                            self.__write_block(block.next_block, next)
+                            self.write_block(block.next_block, next)
                             block.next_block = None
                             block.previous_block = None    
                     
@@ -251,73 +180,56 @@ class HeapFile:
                         first_free = self.read_block(self.__free_block)
                         first_free.previous_block = address
                         block.next_block = first_free_address
-                        self.__write_block(first_free_address, first_free)
+                        self.write_block(first_free_address, first_free)
                     
                     self.__free_block = address
                     block.previous_block = None
-                    self.__write_block(address, block)
+                    self.write_block(address, block)
                 #if block is now empty and is the last block
-                elif address == self.__number_of_blocks - 1:
+                elif address == self.number_of_blocks - 1:
                     current = block
                     current_add = address
-                    if self.__number_of_blocks != 0:
+                    if self.number_of_blocks != 0:
                         #previous = self.__read_block(previous_add)
                         while current != None and current.is_empty():
                             if current.previous_block != None:
                                 previous = self.read_block(current.previous_block)
                                 previous.next_block = current.next_block
-                                self.__write_block(current.previous_block, previous)
+                                self.write_block(current.previous_block, previous)
                                
                             if current.next_block != None:
                                 next_block = self.read_block(current.next_block)
                                 next_block.previous_block = current.previous_block
-                                self.__write_block(current.next_block, next_block)
+                                self.write_block(current.next_block, next_block)
                                
                             if current_add == self.__free_block:
                                 self.__free_block = current.next_block
                             
-                            self.trim_file(self.__block_size)
+                            self.trim_file(self.block_size)
                             current_add -= 1
                             if current_add >= 0:
                                 current = self.read_block(current_add)
                             else:
                                 current = None
-                            self.__number_of_blocks -= 1
+                            self.number_of_blocks -= 1
             else:
                 if was_full:
                     partial_address = self.__partial_free_block 
                     if partial_address != None:
                         partial_block = self.read_block(partial_address)
                         partial_block.previous_block = address
-                        self.__write_block(partial_address, partial_block)
+                        self.write_block(partial_address, partial_block)
                     block.next_block = partial_address
                     self.__partial_free_block = address
                     block.previous_block = None
-                    self.__write_block(address, block)
+                    self.write_block(address, block)
                 else:
-                    self.__write_block(address, block)
-        if self.__number_of_blocks == 0:
+                    self.write_block(address, block)
+        if self.number_of_blocks == 0:
             self.__partial_free_block = None
             self.__free_block = None
 
-    def get_all_blocks(self):
-        """
-        Reads all blocks sequentially from the file and returns them in a list.
-        """
-        blocks = []
-        try:
-            #with open(self.file_path, "rb+") as file:
-            for block_address in range(self.__number_of_blocks):
-                offset = self.__get_block_offset(block_address)
-                self.__file.seek(offset)
-                block_data = self.__file.read(self.__block_size)
-                if block_data:
-                    block = Block.from_byte_array(block_data, type(self.__record_type), self.__block_size)
-                    #print(f"Block {block_address}: {block}")
-                    blocks.append(block)
-        except Exception as e:
-            print(f"An error occurred while reading blocks: {e}")
-        return blocks
+    
         
     def trim_file(self, trim_length):
         """
@@ -326,14 +238,14 @@ class HeapFile:
         try:
             #with open(self.file_path, 'rb+') as file:
             # Get the current size of the file
-            self.__file.seek(0, 2)  # Move to the end of the file
-            current_size = self.__file.tell()
+            self.file.seek(0, 2)  # Move to the end of the file
+            current_size = self.file.tell()
 
             # Calculate the new size
             new_size = max(0, current_size - trim_length)
 
             # Truncate the file to the new size
-            self.__file.truncate(new_size)
+            self.file.truncate(new_size)
             print(f"File trimmed successfully. New size: {new_size} bytes.")
         except Exception as e:
             print(f"An error occurred: {e}")

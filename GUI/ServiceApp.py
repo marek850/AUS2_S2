@@ -64,7 +64,12 @@ class MenuFrame(ctk.CTkFrame):
 
         generate_data_button = ctk.CTkButton(self, text="Generovanie Dát", command=lambda: self.show_frame_callback(GenerateData))
         generate_data_button.pack(pady=10, padx=10)
-
+        
+        save_button = ctk.CTkButton(self, text="Uložiť", command=lambda: self.save())
+        save_button.pack(pady=10, padx=10)
+    def save(self):
+        self.app.save()
+        messagebox.showinfo("Úspech", "Zmeny boli úspešne uložené.")
 
 class AddVehicle(ctk.CTkFrame):
     def __init__(self, parent, controller, app):

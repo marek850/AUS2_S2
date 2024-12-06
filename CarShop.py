@@ -11,9 +11,9 @@ from DataStructure.HeapFile import HeapFile
 
 class CarShop:
     def __init__(self):
-        self.__customers = HeapFile(2000, Customer())
-        self.__cust_by_id = HashFile(100, CustomerByID(), "hash_file_id.bin")
-        self.__cust_by_ecv = HashFile(100, CustomerByECV(), "hash_file_ecv.bin")
+        self.__customers = HeapFile(2000, Customer(), "heap_file.bin", "customers.csv")
+        self.__cust_by_id = HashFile(100, CustomerByID(), "hash_file_id.bin", "customers_by_id.csv")
+        self.__cust_by_ecv = HashFile(100, CustomerByECV(), "hash_file_ecv.bin", "customers_by_ecv.csv")
         self.__generator = KeyGenerator()
     @property
     def customers(self):
@@ -112,4 +112,7 @@ class CarShop:
         customer_to_update = customer.to_customer()
         address = self.__cust_by_id.find(customer_to_update.id).address
         self.__customers.update(address, customer_to_update)
-        
+    def save(self):
+        self.__customers.save()
+        self.__cust_by_id.save()
+        self.__cust_by_ecv.save()

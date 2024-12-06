@@ -1,3 +1,4 @@
+import csv
 from DataStructure.Block import Block
 from DataStructure.HashBlock import HashBlock
 from DataStructure.HeapFile import HeapFile
@@ -7,22 +8,64 @@ from bitarray import bitarray
 
 
 class HashFile():
-    def __init__(self, block_size, record_type, file_name="hashfile.bin"):
+    def __init__(self, block_size, record_type, file_name, load_file):
         self.__block_size = block_size
         self.__record_type = record_type
         self.__file_depth = 1
         self.__block_depth_dir = [1, 1]
         self.__number_of_blocks = 2
         self.__directory = [0, self.__number_of_blocks - 1]
-        self.__blocks = [Block(block_size, record_type), Block(block_size, record_type)]
         self.file_path = file_name
+        self.__load_file = load_file
         if not os.path.exists(self.file_path):
             self.__file = open(self.file_path, "wb") 
             self.__file.close()
-        
         self.__file =  open(self.file_path, "r+b")
-        for i in range(2):
-            self.__write_block(self.__directory[i], self.__blocks[i])
+        if  os.path.exists(self.__load_file):
+            self.load()
+        else:
+            self.__write_block(self.__directory[0], Block(block_size, record_type))
+            self.__write_block(self.__directory[1], Block(block_size, record_type))
+    
+    def save(self):
+        # Create a dictionary with the attributes to be saved
+        data = {
+            "block_size": self.__block_size,
+            "file_depth": self.__file_depth,
+            "block_depth_dir": ",".join(map(str, self.__block_depth_dir)),
+            "number_of_blocks": self.__number_of_blocks,
+            "directory": ",".join(map(str, self.__directory)),
+        }
+
+        # Write the dictionary to a CSV file
+        with open(self.__load_file, mode='w', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=data.keys())
+            writer.writeheader()
+            writer.writerow(data)
+
+    def load(self):
+        # Read the CSV file and update the attributes
+        try:
+            with open(self.__load_file, mode='r', newline='') as csv_file:
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                    self.__block_size = int(row["block_size"]) if row["block_size"] else None
+                    self.__file_depth = int(row["file_depth"]) if row["file_depth"] else None
+                    self.__block_depth_dir = (
+                        list(map(int, row["block_depth_dir"].split(",")))
+                        if row["block_depth_dir"]
+                        else []
+                    )
+                    self.__number_of_blocks = int(row["number_of_blocks"]) if row["number_of_blocks"] else None
+                    self.__directory = (
+                        list(map(int, row["directory"].split(",")))
+                        if row["directory"]
+                        else []
+                    )
+        except FileNotFoundError:
+            print(f"Error: File {self.__load_file} not found.")
+        except Exception as e:
+            print(f"Error loading data: {e}")
     def find(self,key):
         hash = self.__record_type.get_hash_by_key(key)
         dummy = type(self.__record_type)(key)
@@ -32,7 +75,7 @@ class HashFile():
         if target_block:
             return target_block.get_record(dummy)
         return None
-        
+    
     def insert(self, record):
         niejevlozene = True  # Vlajka na indikáciu, či záznam už bol vložený
         inserted_record = record
@@ -278,8 +321,6 @@ class HashFile():
                 block_data = self.__file.read(self.__block_size)
                 if block_data:
                     block = Block.from_byte_array(block_data, type(self.__record_type), self.__block_size)
-                    """ print(f"Block {block_address}:\n {block}")
-                    print(f"--------------------------------------\n") """
                     blocks.append(block)
         except Exception as e:
             print(f"An error occurred while reading blocks: {e}")

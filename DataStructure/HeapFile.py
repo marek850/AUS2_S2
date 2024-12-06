@@ -1,22 +1,27 @@
+import csv
 import os
 from DataStructure.Block import Block
 
 
 class HeapFile:
-    def __init__(self, block_size, record_type):
+    def __init__(self, block_size, record_type, file_name, load_file):
         """
         Initializes the HeapFile with the given block size.
         """
         self.__record_type = record_type
         self.__block_size = block_size  # Size of each block in bytes
-        self.__file_path = "heapfile.bin"  # Path to the binary file
+        self.__file_path = file_name  # Path to the binary file
         self.__partial_free_block = None  # Address of the partially free block, if any
         self.__free_block = None  # Address of a fully free block, if any
         self.__number_of_blocks = 0  # Number of blocks in the file
+        self.__load_file = load_file
         # Ensure the file exists
         if not os.path.exists(self.__file_path):
             self.__file = open(self.__file_path, "wb") 
             self.__file.close()
+        if  os.path.exists(self.__load_file):
+            self.load()
+    
         self.__file =  open(self.__file_path, "r+b")
         
         @property
@@ -72,6 +77,36 @@ class HeapFile:
         @number_of_blocks.setter
         def number_of_blocks(self, value):
             self.__number_of_blocks = value
+    def save(self):
+        data = {
+            "block_size": self.__block_size,
+            "partial_free_block": self.__partial_free_block,
+            "free_block": self.__free_block,
+            "number_of_blocks": self.__number_of_blocks,
+        }
+
+        
+        with open(self.__load_file, mode='w', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=data.keys())
+            writer.writeheader()
+            writer.writerow(data)
+    def load(self):
+        try:
+            with open(self.__load_file, mode='r', newline='') as csv_file:
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                    self.__block_size = int(row["block_size"]) if row["block_size"] else None
+                    self.__partial_free_block = (
+                        int(row["partial_free_block"]) if row["partial_free_block"] else None
+                    )
+                    self.__free_block = int(row["free_block"]) if row["free_block"] else None
+                    self.__number_of_blocks = (
+                        int(row["number_of_blocks"]) if row["number_of_blocks"] else None
+                    )
+        except FileNotFoundError:
+            print(f"Error: File {self.__load_file} not found.")
+        except Exception as e:
+            print(f"Error loading data: {e}")
     def __get_block_offset(self, block_address):
         """
         Calculates the byte offset of a block in the file based on its address.

@@ -30,6 +30,7 @@ class Customer(Record):
             self.__ecv_valid_str = len(self.__ecv)
             self.__surname = ""
             self.__surname_valid_str = len("")
+            self.__valid_visits = 0
             self.__visits = [] 
         while len(self.__visits) < 5:
             self.__visits.append(Visit())  
@@ -44,31 +45,17 @@ class Customer(Record):
             self.__id == other.__id or self.__ecv == other.__ecv
         )
     def __str__(self):
-        return f"Customer(id={self.__id}, name={self.__name}, surname={self.__surname}, ecv={self.__ecv})"
-    def hash_id(self):
-        # Hash ID (which is an integer) using SHA-256
-        id_str = str(self.__id)
-        hash_obj = hashlib.sha256(id_str.encode())
-        # Get the hash digest and convert it to a bitset with a maximum of 32 bits
-        hash_digest = hash_obj.digest()
-        bitset = bitarray()
-        bitset.frombytes(hash_digest)
-        return bitset[:min(32, len(bitset))]  # Limit the bitset to 32 bits if necessary
+        visits_str = "\n".join(str(visit) for visit in self.__visits)
+        return f"Customer(id={self.__id}, name={self.__name}, surname={self.__surname}, ecv={self.__ecv}, valid_visits={self.__valid_visits}, visits:\n{visits_str}, )"
+        
 
-    def hash_ecv(self):
-        # Hash ECV (which is a string) using SHA-256
-        hash_obj = hashlib.sha256(self.__ecv.encode())
-        # Get the hash digest and convert it to a bitset with a maximum of 32 bits
-        hash_digest = hash_obj.digest()
-        bitset = bitarray()
-        bitset.frombytes(hash_digest)
-        return bitset[:min(32, len(bitset))]  # Limit the bitset to 32 bits if necessary
-    # ID property
     @property
     def id(self):
         return self.__id
+    @id.setter
+    def id(self, value):
+        self.__id = value
 
-    # Name property
     @property
     def name(self):
         return self.__name
@@ -76,14 +63,12 @@ class Customer(Record):
     @name.setter
     def name(self, value):
         self.__name = value
-        self.__name_valid_str = len(value)  # Update the validity string length automatically
+        self.__name_valid_str = len(value) 
 
-    # Name valid string length property
     @property
     def name_valid_str(self):
         return self.__name_valid_str
 
-    # ECV property
     @property
     def ecv(self):
         return self.__ecv
@@ -91,14 +76,12 @@ class Customer(Record):
     @ecv.setter
     def ecv(self, value):
         self.__ecv = value
-        self.__ecv_valid_str = len(value)  # Update the validity string length automatically
-
-    # ECV valid string length property
+        self.__ecv_valid_str = len(value)  
+    
     @property
     def ecv_valid_str(self):
         return self.__ecv_valid_str
 
-    # Surname property
     @property
     def surname(self):
         return self.__surname
@@ -106,14 +89,12 @@ class Customer(Record):
     @surname.setter
     def surname(self, value):
         self.__surname = value
-        self.__surname_valid_str = len(value)  # Update the validity string length automatically
+        self.__surname_valid_str = len(value)  
 
-    # Surname valid string length property
     @property
     def surname_valid_str(self):
         return self.__surname_valid_str
 
-     # Valid visits property
     @property
     def valid_visits(self):
         return self.__valid_visits
@@ -122,7 +103,6 @@ class Customer(Record):
     def valid_visits(self, value):
         self.__valid_visits = value
 
-    # Visits property
     @property
     def visits(self):
         return self.__visits
@@ -162,53 +142,39 @@ class Customer(Record):
         byte_array += (len(filled_surname).to_bytes(4, 'little'))
         byte_array += bytes(filled_surname, encoding='utf-8') 
         byte_array += self.__surname_valid_str.to_bytes(4, 'little')
-        """ byte_array += self.__valid_visits.to_bytes(4, 'little')
-        for visit in self.__visits:
-            byte_array += visit.to_byte_array()  """
+        byte_array += self.valid_visits.to_bytes(4, 'little')
+        for visit in self.visits:
+            byte_array += visit.to_byte_array() 
         return byte_array
     @staticmethod 
     def from_byte_array(byte_array):
-          # Create an empty Customer object
-        offset = 0  # Start at the beginning of the byte array
         
+        offset = 0  
         __id = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
         name_length = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-        
         __name = byte_array[offset:offset + name_length].decode('utf-8')
         offset += name_length
-
         __name_valid_str = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
         ecv_length = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
         __ecv = byte_array[offset:offset + ecv_length].decode('utf-8')
         offset += ecv_length
-        
         __ecv_valid_str = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
         surname_length = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
         __surname = byte_array[offset:offset + surname_length].decode('utf-8')
         offset += surname_length
-
         __surname_valid_str = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-        """ 
         __valid_visits = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
-
-
         one_visit_size = len(Visit().to_byte_array())
-        end_offset = offset + __valid_visits * one_visit_size
+        end_offset = offset + 5 * one_visit_size
         __visits = []
-        # Deserialize the descriptions
         while offset < end_offset:
             __visits.append(Visit.from_byte_array(byte_array[offset:offset + one_visit_size]))
             offset += one_visit_size
@@ -217,8 +183,7 @@ class Customer(Record):
             __visits.append(Visit())
         customer = Customer(__name[0:__name_valid_str], __surname[0:__surname_valid_str], __ecv[0:__ecv_valid_str])
         customer.valid_visits = __valid_visits
-        customer.visits = __visits """
-        customer = Customer(__name[0:__name_valid_str], __surname[0:__surname_valid_str], __ecv[0:__ecv_valid_str])
+        customer.visits = __visits
         customer.__id = __id
         return customer
 
@@ -229,7 +194,7 @@ class CustomerForHash(HashRecord):
             self.__address = address
         else:
             self.__address = 53
-    # Address property
+    
     @property
     def address(self):
         return self.__address
@@ -237,7 +202,7 @@ class CustomerForHash(HashRecord):
     @address.setter
     def address(self, value):
         self.__address = value
-    # Key property
+    
     @property
     def key(self):
         return self.__key
@@ -257,7 +222,7 @@ class CustomerByID(CustomerForHash):
         else:
             self.__customer_id = 0
         self.__key = self.__customer_id
-    # Customer ID property
+  
     @property
     def customer_id(self):
         return self.__customer_id
@@ -265,7 +230,7 @@ class CustomerByID(CustomerForHash):
     @customer_id.setter
     def customer_id(self, value):
         self.__customer_id = value
-        self.__key = value  # Update the key automatically
+        self.__key = value  
     def __str__(self):
         return f"CustomerByID(customer_id={self.__customer_id}, address={self.address})"
     def __eq__(self, other):
@@ -282,7 +247,6 @@ class CustomerByID(CustomerForHash):
             bitset = bitset+ bitarray('0') * padding 
         return bitset[:32]
     def get_hash(self):
-        # Convert ID (which is an integer) to bits
         bitset = bitarray(endian='little')
         bitset.frombytes(self.__customer_id.to_bytes((self.__customer_id.bit_length() + 7) // 8, byteorder='little'))
         
@@ -304,8 +268,7 @@ class CustomerByID(CustomerForHash):
         return byte_array
     @staticmethod 
     def from_byte_array(byte_array):
-          # Create an empty Customer object
-        offset = 0  # Start at the beginning of the byte array
+        offset = 0  
         
         address = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
@@ -337,8 +300,9 @@ class CustomerByECV(CustomerForHash):
         Returns the size of the Record in bytes.
         """
         return len(self.to_byte_array())
+    def __str__(self):
+        return f"CustomerByECV(ecv={self.__customer_ecv}, address={self.address})"
     def get_hash(self):
-        # Convert ECV (which is a string) to bits
         bitset = bitarray(endian='little')
         bitset.frombytes(self.__customer_ecv.encode('utf-8'))
         if len(bitset) < 32:
@@ -347,7 +311,6 @@ class CustomerByECV(CustomerForHash):
         
         return bitset[:32]  
     def get_hash_by_key(self, key):
-        # Convert ECV (which is a string) to bits
         bitset = bitarray(endian='little')
         bitset.frombytes(key.encode('utf-8'))
         if len(bitset) < 32:
@@ -367,8 +330,7 @@ class CustomerByECV(CustomerForHash):
         return byte_array
     @staticmethod 
     def from_byte_array(byte_array):
-          # Create an empty Customer object
-        offset = 0  # Start at the beginning of the byte array
+        offset = 0  
         
         address = int.from_bytes(byte_array[offset:offset + 4], 'little')
         offset += 4
@@ -389,23 +351,51 @@ class CustomerGUI:
         self.name = name[:15] if name is not None else ""
         self.surname = surname[:20] if surname is not None else ""
         self.ecv = ecv[:10] if ecv is not None else ""
+        self.valid_visits = int(0)
         self.visits = visits if visits is not None else []
-
+    def __str__(self):
+        visits_str = "\n".join(str(visit) for visit in self.visits[:self.valid_visits])
+        return f"Customer(id={self.id}, name={self.name}, surname={self.surname}, ecv={self.ecv}, visits:\n{visits_str}"        
+    def add_visit(self, visit):
+        """
+        Pridá záznam o navsteve.
+        """
+        if  self.is_full() == False:
+            if not self.visits:
+                self.visits.append(visit)
+            else:
+                self.visits[self.valid_visits] = visit
+            self.valid_visits += 1
+    def remove_visit(self, visit):
+        """
+        Pridá záznam o navsteve.
+        """
+        self.visits.remove(visit)
+        if self.valid_visits > 0:
+            self.valid_visits -= 1
+        while len(self.visits) < 5:
+            self.visits.append(Visit())
+    def is_full(self):
+        """
+        Vráti True, ak je blok plný.
+        """
+        return self.valid_visits == len(self.visits)    
     def from_customer(self, customer):
         """
         Initialize GUI representation of Customer using an existing Customer object.
         """
         self.id = customer.id
-        self.name = customer.name[:15]
-        self.surname = customer.surname[:20]
-        self.ecv = customer.ecv[:10]
+        self.name = customer.name
+        self.surname = customer.surname
+        self.ecv = customer.ecv
         self.visits = customer.visits
+        self.valid_visits = customer.valid_visits
 
     def to_customer(self):
         """
         Create a Customer object from the GUI representation.
         """
-        return Customer(name=self.name, surname=self.surname, ecv=self.ecv, id=self.id, visits=self.visits)
-
-    def __str__(self):
-        return f"CustomerGUI(id={self.id}, name={self.name}, surname={self.surname}, ecv={self.ecv}, visits={self.visits})"
+        cus = Customer(name=self.name, surname=self.surname, ecv=self.ecv, id=self.id)
+        cus.valid_visits = self.valid_visits
+        cus.visits = self.visits
+        return  cus

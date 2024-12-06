@@ -146,6 +146,18 @@ class HashFileTester:
         self.__unique_ids = set()
         self.__unique_addresses = set()
     
+    def generate_finds(self):
+        mistakes = 0
+        for _ in self.__customers:
+            id = _.customer_id
+            found_element = self.__hash_file.find(id)
+            if found_element != _:
+                mistakes+=1
+        
+        if mistakes == 0:
+            print("All records have been found successfully")
+        else:
+            print(f"Number of mistakes during find:{mistakes}")
     def generate_insert(self, operation_num):
         # Generate unique values for the customer
         id = self.generate_unique_value(4, self.__unique_ids)
@@ -195,4 +207,5 @@ class HashFileTester:
             print(f"Seed: {self.__seed}")
             """ self.generate_inserts(1000)
             self.generate_deletes(1000) """
-            self.generate_inserts(10000)
+            self.generate_inserts(1000)
+            self.generate_finds()

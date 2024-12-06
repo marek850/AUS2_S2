@@ -153,7 +153,20 @@ class HeapFile:
         self.__append_block(block)
         self.__partial_free_block = block_address
         return block_address
-
+    def update(self, address, record):
+        """
+        Updates a record in a specific block address.
+        """
+        block = self.read_block(address)
+        rec = block.get_record(record)
+        block.remove_record(rec)
+        """ block_new = Block(self.__block_size, self.__record_type)
+        records = block.records
+        valid_records = block.valid_count """
+        """ for _ in records[:valid_records]:
+            block_new.add_record(_) """
+        block.add_record(record)
+        self.__write_block(address, block)
     def get(self, address, record):
         """
         Retrieves a record from a specific block address.
@@ -265,7 +278,7 @@ class HeapFile:
                 block_data = self.__file.read(self.__block_size)
                 if block_data:
                     block = Block.from_byte_array(block_data, type(self.__record_type), self.__block_size)
-                    print(f"Block {block_address}: {block}")
+                    #print(f"Block {block_address}: {block}")
                     blocks.append(block)
         except Exception as e:
             print(f"An error occurred while reading blocks: {e}")

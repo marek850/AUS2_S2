@@ -6,16 +6,20 @@ class JobDescription:
         else:
             self.__description = "Unknown"
             self.__valid_str = len("Unknown")
-        
+    @property
+    def description(self):
+        return self.__description
     def fill_string(self, string, length):
         return string.ljust(length, "*")
-
+    def __str__(self):
+        return f"JobDescription:'{self.__description}')"
     def to_byte_array(self):
         byte_array = bytearray()
         filled_desc = self.fill_string(self.__description, 20)
         byte_array += (len(filled_desc).to_bytes(4, 'little'))
         byte_array += bytes(filled_desc, encoding='utf-8') 
         byte_array += self.__valid_str.to_bytes(4, 'little') 
+        return byte_array
     @staticmethod
     def from_byte_array(byte_array):
         cursor = 0

@@ -7,7 +7,7 @@ from bitarray import bitarray
 
 
 class HashFile():
-    def __init__(self, block_size, record_type):
+    def __init__(self, block_size, record_type, file_name="hashfile.bin"):
         self.__block_size = block_size
         self.__record_type = record_type
         self.__file_depth = 1
@@ -15,7 +15,7 @@ class HashFile():
         self.__number_of_blocks = 2
         self.__directory = [0, self.__number_of_blocks - 1]
         self.__blocks = [Block(block_size, record_type), Block(block_size, record_type)]
-        self.file_path = "hashfile.bin"
+        self.file_path = file_name
         if not os.path.exists(self.file_path):
             self.__file = open(self.file_path, "wb") 
             self.__file.close()
@@ -284,7 +284,3 @@ class HashFile():
         except Exception as e:
             print(f"An error occurred while reading blocks: {e}")
         return blocks
-    
-class Dummy:
-    def __init__(self, key):
-        self.__key = key

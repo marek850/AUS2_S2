@@ -1,10 +1,6 @@
 import csv
 from DataStructure.Block import Block
-from DataStructure.HashBlock import HashBlock
-from DataStructure.HeapFile import HeapFile
-import math
 import os
-from bitarray import bitarray
 
 
 class HashFile():
@@ -28,7 +24,6 @@ class HashFile():
             self.__write_block(self.__directory[1], Block(block_size, record_type))
     
     def save(self):
-        # Create a dictionary with the attributes to be saved
         data = {
             "block_size": self.__block_size,
             "file_depth": self.__file_depth,
@@ -37,14 +32,11 @@ class HashFile():
             "directory": ",".join(map(str, self.__directory)),
         }
 
-        # Write the dictionary to a CSV file
         with open(self.__load_file, mode='w', newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=data.keys())
             writer.writeheader()
             writer.writerow(data)
-
     def load(self):
-        # Read the CSV file and update the attributes
         try:
             with open(self.__load_file, mode='r', newline='') as csv_file:
                 reader = csv.DictReader(csv_file)

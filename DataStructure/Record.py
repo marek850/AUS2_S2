@@ -20,9 +20,6 @@ class Record(IBlock, ABC):
         pass
     
     def get_size(self):
-        """
-        Returns the size of the Record in bytes.
-        """
         return len(self.to_byte_array())
 
     def __eq__(self, other):

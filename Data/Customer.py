@@ -36,9 +36,6 @@ class Customer(Record):
             self.__visits.append(Visit())  
             
     def __eq__(self, other):
-        """
-        Overrides the == operator to compare two Person objects.
-        """
         if not isinstance(other, Customer):
             return False
         return (
@@ -110,23 +107,21 @@ class Customer(Record):
     @visits.setter
     def visits(self, value):
         self.__visits = value
+        
     def is_full(self):
-        """
-        Vráti True, ak je blok plný.
-        """
         return self.valid_visits == len(self.visits)
+    
     def add_visit(self, visit):
-        """
-        Pridá záznam o navsteve.
-        """
         if  self.is_full() == False:
             if not self.visits:
                 self.visits.append(visit)
             else:
                 self.visits[self.valid_visits] = visit
             self.valid_visits += 1
+            
     def fill_string(self, string, length):
         return string.ljust(length, "*")
+    
     def to_byte_array(self):
         byte_array = bytearray()
         byte_array += self.__id.to_bytes(4, 'little')
@@ -146,6 +141,7 @@ class Customer(Record):
         for visit in self.visits:
             byte_array += visit.to_byte_array() 
         return byte_array
+    
     @staticmethod 
     def from_byte_array(byte_array):
         
@@ -214,6 +210,7 @@ class CustomerForHash(HashRecord):
         pass
     def get_hash_by_key(self, key):
         pass
+    
 class CustomerByID(CustomerForHash):
     def __init__(self, customer_id = None , address = None):
         super().__init__(address)
@@ -231,13 +228,13 @@ class CustomerByID(CustomerForHash):
     def customer_id(self, value):
         self.__customer_id = value
         self.__key = value  
+        
     def __str__(self):
         return f"CustomerByID(customer_id={self.__customer_id}, address={self.address})"
+    
     def __eq__(self, other):
-        """
-        Overrides the == operator to compare two CustomerByID objects.
-        """
         return self.__key == other.__key
+    
     def get_hash_by_key(self, key):
         bitset = bitarray(endian='little')
         bitset.frombytes(key.to_bytes((key.bit_length() + 7) // 8, byteorder='little'))
@@ -246,6 +243,7 @@ class CustomerByID(CustomerForHash):
             padding = 32 - len(bitset)
             bitset = bitset+ bitarray('0') * padding 
         return bitset[:32]
+    
     def get_hash(self):
         bitset = bitarray(endian='little')
         bitset.frombytes(self.__customer_id.to_bytes((self.__customer_id.bit_length() + 7) // 8, byteorder='little'))
@@ -254,18 +252,19 @@ class CustomerByID(CustomerForHash):
             padding = 32 - len(bitset)
             bitset = bitset+ bitarray('0') * padding 
         return bitset[:32]
+    
     def get_size(self):
-        """
-        Returns the size of the Record in bytes.
-        """
         return len(self.to_byte_array())
+    
     def fill_string(self, string, length):
         return string.ljust(length, "*")
+    
     def to_byte_array(self):
         byte_array = bytearray()
         byte_array += super().address.to_bytes(4, 'little')
         byte_array += self.__customer_id.to_bytes(4, 'little')
         return byte_array
+    
     @staticmethod 
     def from_byte_array(byte_array):
         offset = 0  
@@ -290,16 +289,13 @@ class CustomerByECV(CustomerForHash):
             self.__customer_ecv = ""
             self.__ecv_valid_str = len(self.__customer_ecv)
         self.__key = self.__customer_ecv
+        
     def __eq__(self, other):
-        """
-        Overrides the == operator to compare two CustomerByID objects.
-        """
         return self.__key == other.__key
+    
     def get_size(self):
-        """
-        Returns the size of the Record in bytes.
-        """
         return len(self.to_byte_array())
+    
     def __str__(self):
         return f"CustomerByECV(ecv={self.__customer_ecv}, address={self.address})"
     def get_hash(self):
@@ -318,8 +314,10 @@ class CustomerByECV(CustomerForHash):
             bitset = bitset + bitarray('0') * padding
         
         return bitset[:32]  
+    
     def fill_string(self, string, length):
         return string.ljust(length, "*")
+    
     def to_byte_array(self):
         byte_array = bytearray()
         byte_array += super().address.to_bytes(4, 'little')
@@ -328,6 +326,7 @@ class CustomerByECV(CustomerForHash):
         byte_array += bytes(filled_ecv, encoding='utf-8') 
         byte_array += self.__ecv_valid_str.to_bytes(4, 'little')
         return byte_array
+    
     @staticmethod 
     def from_byte_array(byte_array):
         offset = 0  
@@ -345,6 +344,7 @@ class CustomerByECV(CustomerForHash):
         offset += 4
         customer = CustomerByECV(__ecv[0:__ecv_valid_str], address)
         return customer
+    
 class CustomerGUI:
     def __init__(self, id=None, name=None, surname=None, ecv=None, visits=None):
         self.id = int(id) if id is not None else None
@@ -357,33 +357,24 @@ class CustomerGUI:
         visits_str = "\n".join(str(visit) for visit in self.visits[:self.valid_visits])
         return f"Customer(id={self.id}, name={self.name}, surname={self.surname}, ecv={self.ecv}, visits:\n{visits_str}"        
     def add_visit(self, visit):
-        """
-        Pridá záznam o navsteve.
-        """
         if  self.is_full() == False:
             if not self.visits:
                 self.visits.append(visit)
             else:
                 self.visits[self.valid_visits] = visit
             self.valid_visits += 1
+            
     def remove_visit(self, visit):
-        """
-        Pridá záznam o navsteve.
-        """
         self.visits.remove(visit)
         if self.valid_visits > 0:
             self.valid_visits -= 1
         while len(self.visits) < 5:
             self.visits.append(Visit())
+            
     def is_full(self):
-        """
-        Vráti True, ak je blok plný.
-        """
-        return self.valid_visits == len(self.visits)    
+        return self.valid_visits == len(self.visits) 
+       
     def from_customer(self, customer):
-        """
-        Initialize GUI representation of Customer using an existing Customer object.
-        """
         self.id = customer.id
         self.name = customer.name
         self.surname = customer.surname
@@ -392,9 +383,6 @@ class CustomerGUI:
         self.valid_visits = customer.valid_visits
 
     def to_customer(self):
-        """
-        Create a Customer object from the GUI representation.
-        """
         cus = Customer(name=self.name, surname=self.surname, ecv=self.ecv, id=self.id)
         cus.valid_visits = self.valid_visits
         cus.visits = self.visits

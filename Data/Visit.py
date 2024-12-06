@@ -37,19 +37,19 @@ class Visit:
     @property
     def description(self):
         return self.__description
+    
     def add_description(self, job_description):
         if self.__description_valid < 10:
             self.__description[self.__description_valid] = JobDescription(job_description)
             self.__description_valid += 1
         else:
             raise ValueError("Limit popisov je 10")
+        
     def __str__(self):
         description_str = ', '.join(str(desc) for desc in self.__description[:self.__description_valid])
         return f"Visit(price={self.__price:.2f}, date={self.__date}, description=[{description_str}] valid_descriptions={self.__description_valid})"
+    
     def to_byte_array(self):
-        """
-        Converts the Visit to a byte array.
-        """
         byte_array = bytearray()
         byte_array += struct.pack("f", self.__price)
         byte_array += struct.pack("HBB", self.__date.year, self.__date.month, self.__date.day)
@@ -60,9 +60,6 @@ class Visit:
     
     @staticmethod
     def from_byte_array(byte_array):
-        """
-        Converts a byte array back into a Visit object.
-        """
         offset = 0
         __price = struct.unpack_from("f", byte_array, offset)[0]
         offset += 4

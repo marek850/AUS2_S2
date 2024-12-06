@@ -2,7 +2,6 @@ from datetime import date
 import random
 import string
 from Data.Customer import Customer, CustomerByECV, CustomerByID, CustomerGUI
-from Data.JobDescription import JobDescription
 from Data.Visit import Visit
 from DataGeneration.Generator import KeyGenerator
 from DataStructure.HashFile import HashFile

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
-from tkcalendar import Calendar  # Date picker widget
+from tkcalendar import Calendar 
 from datetime import date, datetime
 
 from Data.JobDescription import JobDescription
